@@ -1,4 +1,4 @@
 # pythonfiles
-repo for python prgrams
+repo for python programs
 
 This chance was made in the "readme-changes branch"
