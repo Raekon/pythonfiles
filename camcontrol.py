@@ -50,22 +50,39 @@ class print_up(object):
 
     def printit(self):
         print("virker knappen? {0},{1},{2},{3},{4},{5},{6}".format(self.minutes.get(), self.timelapse.get(), self.filename.get(),self.picsize.value,self.color_choice.value,self.namestamp_choice.value,self.preview_choice.value))
-        minutes=int(float(self.minutes.value))*1000*60
-        filename=self.filename.value
-        timelapse=int(float(self.timelapse.value))*1000
-        namestamp_choice=self.namestamp_choice.value
-        color_choice=self.color_choice.value
-        preview_choice=self.preview_choice.value
-        
-        if self.media==0:
+        minutes=int(float(self.minutes.value))*1000*60    #calculate microseconds from given number of minutes
+        if minutes==0:
+            minutes=10000
+        filename=self.filename.value    
+        timelapse=int(float(self.timelapse.value))*1000   #calculate microseconds from given number of seconds
+        namestamp_choice=self.namestamp_choice.value   #timestamp or numbering
+        if self.namestamp_choice.value=="%d":
+            ts="-ts"
+        else:
+            ts=""
+        color_choice=self.color_choice.value        #color or B/W
+        preview_choice=self.preview_choice.value    #size of Preview(  (if at all)
+        if preview_choice=="200":
+            preview="-p '200,200,200,200'"
+        elif preview_choice=="400":
+            preview="-p '200,200,400,400'"
+        elif preview_choice=="800":
+            preview="-p '200,200,800,800'"
+        elif preview_choice=="fullsize":
+            preview="-f"
+        elif preview_choice=="ingen preview":
+            preview="-n"
+        tid=int(time.time())
+        print(tid)
+        bitrate=5000000
+            
+        if self.media==0:         #photo chosen
             picsize=self.picsize.value
-            cmd="raspistill -w {0} -h {1}  -q 80 -t {2} -tl {3} -ts -o /home/pi/Pictures/cam/{4}{5}.jpg".format(self.picture_width,self.picture_height, minutes, timelapse,filename,namestamp_choice)
-        elif self.media==1: 
-            vidsize=self.videoslider.value
-            framerate=self.timelapse.value
-            cmd="raspistill -o"        
+            cmd="raspistill -w {0} -h {1}  -q 80 -t {2} -tl {3} {4} {5} -o /home/pi/Pictures/cam/{6}{7}.jpg".format(self.picture_width,self.picture_height, minutes, timelapse,preview,ts,filename,namestamp_choice)
+        elif self.media==1:     #video chosen
+            cmd="raspivid -w {0} -h {1} -t {2} -fps {3} -b {4} {5} -o /home/pi/Videos/{6}.h264".format(self.picture_width,self.picture_height,minutes,self.timelapse.value, bitrate,preview,filename)     
         print (cmd)
-        #subprocess.run(cmd, shell=True)
+        subprocess.run(cmd, shell=True)
 
     def update_videosize(self):     #this function calculates the height from the chosen width-input
         self.slider_text.value=self.videoslider.value
@@ -87,3 +104,4 @@ class print_up(object):
 
 printer=print_up()
 printer.app.display()
+
