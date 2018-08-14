@@ -63,9 +63,9 @@ class print_up(object):
         elif self.media==1: 
             vidsize=self.videoslider.value
             framerate=self.timelapse.value
-            cmd="raspistill -o"        
-        print (cmd)
-        #subprocess.run(cmd, shell=True)
+            cmd="raspistill -t 2 -q 80 -o /home/pi/pythonfiles/camera/vnctest.jpg"        
+        
+        subprocess.run(cmd, shell=True)
 
     def update_videosize(self):     #this function calculates the height from the chosen width-input
         self.slider_text.value=self.videoslider.value
