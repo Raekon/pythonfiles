@@ -2,6 +2,7 @@ from guizero import *
 import time
 import os
 import subprocess
+from PIL import Image
 
 class print_up(object):
     def __init__(self):
@@ -23,9 +24,10 @@ class print_up(object):
         self.picsize = Slider(self.box1, start=640, end=3280, grid=[3, 3], command=self.update_size)  #slider for the picture size
         self.picsize.text_size=1    #hide the native text on the slider
         self.slider_text = Text(self.box1, text="640 x 480",grid=[3, 4])    #display the slider values calculated in self.update_size
-        self.color_choice=ButtonGroup(self.box1, options=["Farve", "Sort/hvid"], selected="Sort/hvid", grid=[0,5])   #choose color
-        self.namestamp_choice= ButtonGroup(self.box1, options=[["Timestamp","%d"], ["numre","%4d"]], selected="Timestamp", grid=[1,5])   #chose number scheme for filenames
-        self.preview_choice= ButtonGroup(self.box1, options=["200", "400", "800","fullsize","ingen preview"], selected="ingen preview", grid=[2,5])  #chose preview size
+        self.online_choice=ButtonGroup(self.box1, options=["Send til FTP","Gem lokalt"], selected="Gem lokalt", grid=[0,5])
+        self.color_choice=ButtonGroup(self.box1, options=["Farve", "Sort/hvid"], selected="Sort/hvid", grid=[1,5])   #choose color
+        self.namestamp_choice= ButtonGroup(self.box1, options=[["Timestamp","%d"], ["numre","%4d"]], selected="%d", grid=[2,5])   #chose number scheme for filenames
+        self.preview_choice= ButtonGroup(self.box1, options=["200", "400", "800","fullsize","ingen preview"], selected="ingen preview", grid=[3,5])  #chose preview size
         self.submitbutton=PushButton(self.box1, command=self.printit, text="Submit", grid=[3,6], enabled=False)
         self.resetbutton=PushButton(self.box1, command=self.reset, text="Reset", grid=[0,6])
         
@@ -83,6 +85,14 @@ class print_up(object):
             cmd="raspivid -w {0} -h {1} -t {2} -fps {3} -b {4} {5} -o /home/pi/Videos/{6}.h264".format(self.picture_width,self.picture_height,minutes,self.timelapse.value, bitrate,preview,filename)     
         print (cmd)
         subprocess.run(cmd, shell=True)
+        if self.color_choice.value=="Sort/hvid":
+            dir="/home/pi/Pictures/cam/"
+            dir_cont=os.listdir(dir)  #put dir content in a list
+            print (dir_cont)
+            for i in dir_cont:
+                image=Image.open("{0}{1}".format(dir,i)).convert('L')
+                image.save("{0}{1}".format(dir,i))
+                            
 
     def update_videosize(self):     #this function calculates the height from the chosen width-input
         self.slider_text.value=self.videoslider.value
