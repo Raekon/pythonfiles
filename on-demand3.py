@@ -114,3 +114,4 @@ app.when_key_pressed= key_choice
 app.display()
 
 #args=[minutes.get(),timelapse.get(),filename.get(),picsize.value]
+# git hub  zMtZLSvEGVEt6Bg4

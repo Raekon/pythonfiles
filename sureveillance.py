@@ -42,7 +42,7 @@ while t==1:
     if timer>=7 and timer<=23:
         cmd = "raspistill  -o /home/pi/Pictures/cam/test%d.jpg -a 12 -dt -w 1024 -h 800 -q 100 -t 1800000 -tl 2000 -p 200,200,200,200"
         subprocess.run(cmd, shell=True)
-        thread=Surveillance(3600,2)
+        thread=Surveillance(3600,600)
         thread.start()
     else:
         time.sleep(60)
