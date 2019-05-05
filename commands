@@ -1,0 +1,18 @@
+raspivid -n -ih -t 0 -rot 0 -w 1024 -h 720 -b 500000 -fps 15 -o -|nc -lkv4 5001
+
+#Åbner en port og sender raspivid billedet trådløst på netværket
+
+#koder en video der hedder movietest.h264
+
+MP4Box -add  movietest.h264 movietest.mp4
+
+# sender indholdet fra mappen pi/Pictures/ til Kongesquash ftp
+
+raspivid -md 7 -t 10000 -fps 200 -o movietest.h264 -w 640 -h 480 -ex off -p 200,200,200,200 -ag 1.5 -b 8000000
+
+# long exposure
+
+raspistill -t 1 -ss 60000 -o lightest.jpg -md 3  -ISO 100 -ev -10 -ex verylong
+
+#github pass
+zMtZLSvEGVEt6Bg4
