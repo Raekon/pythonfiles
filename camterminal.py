@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
 import threading
@@ -178,7 +179,7 @@ def video(choice):
     subprocess.run(video_cmd,shell=True)
     subprocess.run(convert_cmd,shell=True)
     os.remove("/home/pi/Pictures/cam/{0}.h264".format(choice.filename))
-    #vid_uploader.run(choice.filename)
+    vid_uploader.run(choice.filename)
 
 choice = Choices()
 if choice.media=="f":
