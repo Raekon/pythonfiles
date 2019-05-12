@@ -82,12 +82,15 @@ class Choices ():
                         print("du har ikke skrevet et helt tal.\n")
                 while chooser==4:
                     print("hvilken størrelse skal billederne have?")
-                    print("1) 640*480")
-                    print("2) 800*600")
-                    print("3) 1024*768")
-                    print("4) 1280 * 1024")
-                    print("5) 1920*1080")
-                    print("6) 2592*1944  (max 15 FPS)")
+                    
+                    print("    model 1          model 2")
+                    print("1) 1920*1080         1920*1080")
+                    print("2) 2592*1944         3280*2464")
+                    print("3) 2592*1944         3280*2464")
+                    print("4) 1296*972          1640*1232")
+                    print("5) 1296*730          1640*922")
+                    print("6)  640*480          1280*720")
+                    print("7)  640*480           640*480")
                     self.size=input("")
                     try:
                         size=int(self.size)
@@ -117,31 +120,37 @@ class Choices ():
                         chooser=13     
                     except ValueError:
                         print("du har ikke skrevet et helt tal\n")                
+                                
                 while chooser==13:
-                    self.framerate=input("hvor mange billeder i sekundet?")
-                    try:
-                        val=int(self.framerate)
-                        chooser=14
-                    except ValueError:
-                        print("du har ikke skrevet et helt tal.\n")                
-                while chooser==14:
                     print("hvilken størrelse skal filmen have?")
-                    print("1) 640*480")
-                    print("2) 800*600")
-                    print("3) 1024*768")
-                    print("4) 1280 * 1024")
-                    print("5) 1920*1080")
+                    print("    model 1                      model 2")
+                    print("1) 1920*1080 (1-30 fps)        1920*1080 (.1-30 fps)")
+                    print("2) 2592*1944 (1-15 fps)        3280*2464 (.1-15 fps)")
+                    print("3) 2592*1944 (0,16-1 fps)      3280*2464 (.1-15 fps)")
+                    print("4) 1296*972  (1-42 fps)        1640*1232 (.1-40 fps)")
+                    print("5) 1296*730  (1-49 fps)        1640*922  (.1-40 fps)")
+                    print("6)  640*480  (42-60 fps)       1280*720  (40-90 fps)")
+                    print("7)  640*480  (60-90 fps)        640*480  (90-200 fps)")
                     self.size=input("")
                     try:
                         size=int(self.size)
-                        if (1<= size) and (5>= size):
+                        if (1<= size) and (7>= size):
                             self.size=int(self.size)
-                            chooser=15                     
+                            chooser=14                     
                         else:
-                            self.size=2
-                            chooser=15
+                            self.size=0
+                            chooser=14
                     except ValueError:
                         print("Du har ikke skrevet et helt tal")
+                        
+                while chooser==14:
+                    self.framerate=input("hvor mange billeder i sekundet?")
+                    try:
+                        val=int(self.framerate)
+                        chooser=15
+                    except ValueError:
+                        print("du har ikke skrevet et helt tal.\n")
+                        
                 while (chooser==15):
                     self.filename=input("hvad skal filen hedde?")
                     if self.filename=="":
@@ -158,22 +167,46 @@ class Choices ():
     
         
 def foto(choice):
+    print("fotoloop kører")
     loops=int(choice.minutter/60000/10)  #number of loops
     rest=int((choice.minutter%600000)/60000)  #number of minutes left
+    Switcher={
+        0:"",
+        1:"-w 1920 -h 1080",
+        2:"-w 2592 -h 1944",
+        3:"-w 2592 -h 1944",
+        4:"-w 1296 -h 972",
+        5:"-w 1296 -h 730",
+        6:"-w 640 -h 480",
+        7:"-w 640 -h 480"}
+    
+    print (Switcher[1])
+    
     for a in range (loops):  #makes 10 minute loops with upload cycle
-        foto_cmd="raspistill -t 600000 -tl {0} -a 12 -md 1 -dt -p 200,200,200,200 -q 90 -o /home/pi/Pictures/cam/{1}%d.jpg".format(choice.timelapse, choice.filename)
+        foto_cmd="raspistill -t 600000 -tl {0} -a 12 -md {1} {2} -dt -p 200,200,200,200 -q 100 -o /home/pi/Pictures/cam/{3}%d.jpg".format(choice.timelapse, choice.size, Switcher[choice.size],choice.filename)
         print(foto_cmd)
         print (loops)
         subprocess.run(foto_cmd,shell=True)
         Uploader.run(choice.filename)
     rest=rest*60000
-    foto_cmd="raspistill -t {0} -tl {1} -a 12 -md 1 -dt -p 200,200,200,200 -q 90 -o /home/pi/Pictures/cam/{2}%d.jpg".format(rest, choice.timelapse, choice.filename)
+    foto_cmd="raspistill -t {0} -tl {1} -a 12 -md {2} {3} -dt -p 200,200,200,200 -q 100 -o /home/pi/Pictures/cam/{4}%d.jpg".format(rest, choice.timelapse, choice.size, Switcher[choice.size], choice.filename)
     print(rest)
     subprocess.run(foto_cmd,shell=True)
-    Uploader.run(choice.filename)
+    #Uploader.run(choice.filename)
     
 def video(choice):
-    video_cmd="raspivid -t {0} -fps {1} -md {2} -p 200,200,200,200 -o /home/pi/Pictures/cam/{3}.h264".format(choice.minutter, choice.framerate, choice.size, choice.filename)
+    Switcher={
+        0:"",
+        1:"-w 1920 -h 1080",
+        2:"-w 3280 -h 2464",
+        3:"-w 3280 -h 2464",
+        4:"-w 1640 -h 1232",
+        5:"-w 1640 -h 922",
+        6:"-w 1280 -h 720",
+        7:"-w 640 -h 480"}
+    
+    print (Switcher[1])
+    video_cmd="raspivid -t {0} -fps {1} -md {2} {3} -p 200,200,200,200 -o /home/pi/Pictures/cam/{4}.h264".format(choice.minutter, choice.framerate, choice.size, Switcher[choice.size],choice.filename)
     convert_cmd="MP4Box -add  /home/pi/Pictures/cam/{0}.h264 /home/pi/Pictures/cam/{0}.mp4".format(choice.filename)
     print (video_cmd)
     subprocess.run(video_cmd,shell=True)
