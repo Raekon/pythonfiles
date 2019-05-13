@@ -60,7 +60,15 @@ class vid_uploader(threading.Thread):
 
 class Choices ():
     def __init__ (self):
-        chooser=1
+        chooser=0
+        while chooser==0:
+            self.version=input("Raspicam version 1 eller 2? ")
+            try:
+                if (int(self.version)==1 or int(self.version)==2):
+                    chooser=1
+            except ValueError:
+                print("Du skal vælge enten 1 eller 2")
+            
         while(chooser==1):
             self.media=input("Foto (f) eller Video (v) eller preview (p)?")
             if self.media=="f":
@@ -169,17 +177,28 @@ class Choices ():
 def foto(choice):
     print("fotoloop kører")
     loops=int(choice.minutter/60000/10)  #number of loops
-    rest=int((choice.minutter%600000)/60000)  #number of minutes left
-    Switcher={
-        0:"",
-        1:"-w 1920 -h 1080",
-        2:"-w 2592 -h 1944",
-        3:"-w 2592 -h 1944",
-        4:"-w 1296 -h 972",
-        5:"-w 1296 -h 730",
-        6:"-w 640 -h 480",
-        7:"-w 640 -h 480"}
-    
+    rest=int((choice.minutter%600000)/60000)  #number of minutes left3
+    print("version valgt er {0}".format(choice.version))
+    if (choice.version=="1"):
+        Switcher={
+            0:"",
+            1:"-w 1920 -h 1080",
+            2:"-w 2592 -h 1944",
+            3:"-w 2592 -h 1944",
+            4:"-w 1296 -h 972",
+            5:"-w 1296 -h 730",
+            6:"-w 640 -h 480",
+            7:"-w 640 -h 480"}
+    else:
+        Switcher={
+            0:"",
+            1:"-w 1920 -h 1080",
+            2:"-w 3280 -h 2464",
+            3:"-w 3280 -h 2464",
+            4:"-w 1640 -h 1232",
+            5:"-w 1640 -h 922",
+            6:"-w 1280 -h 720",
+            7:"-w 640 -h 480"}
     print (Switcher[1])
     
     for a in range (loops):  #makes 10 minute loops with upload cycle
@@ -190,20 +209,32 @@ def foto(choice):
         Uploader.run(choice.filename)
     rest=rest*60000
     foto_cmd="raspistill -t {0} -tl {1} -a 12 -md {2} {3} -dt -p 200,200,200,200 -q 100 -o /home/pi/Pictures/cam/{4}%d.jpg".format(rest, choice.timelapse, choice.size, Switcher[choice.size], choice.filename)
+    print(foto_cmd)
     print(rest)
     subprocess.run(foto_cmd,shell=True)
     #Uploader.run(choice.filename)
     
 def video(choice):
-    Switcher={
-        0:"",
-        1:"-w 1920 -h 1080",
-        2:"-w 3280 -h 2464",
-        3:"-w 3280 -h 2464",
-        4:"-w 1640 -h 1232",
-        5:"-w 1640 -h 922",
-        6:"-w 1280 -h 720",
-        7:"-w 640 -h 480"}
+    if (choice.version==1):
+        Switcher={
+            0:"",
+            1:"-w 1920 -h 1080",
+            2:"-w 2592 -h 1944",
+            3:"-w 2592 -h 1944",
+            4:"-w 1296 -h 972",
+            5:"-w 1296 -h 730",
+            6:"-w 640 -h 480",
+            7:"-w 640 -h 480"}
+    else: 
+        Switcher={
+            0:"",
+            1:"-w 1920 -h 1080",
+            2:"-w 3280 -h 2464",
+            3:"-w 3280 -h 2464",
+            4:"-w 1640 -h 1232",
+            5:"-w 1640 -h 922",
+            6:"-w 1280 -h 720",
+            7:"-w 640 -h 480"}
     
     print (Switcher[1])
     video_cmd="raspivid -t {0} -fps {1} -md {2} {3} -p 200,200,200,200 -o /home/pi/Pictures/cam/{4}.h264".format(choice.minutter, choice.framerate, choice.size, Switcher[choice.size],choice.filename)
@@ -212,7 +243,7 @@ def video(choice):
     subprocess.run(video_cmd,shell=True)
     subprocess.run(convert_cmd,shell=True)
     os.remove("/home/pi/Pictures/cam/{0}.h264".format(choice.filename))
-    vid_uploader.run(choice.filename)
+    #vid_uploader.run(choice.filename)
 
 choice = Choices()
 if choice.media=="f":
