@@ -220,7 +220,7 @@ def foto(choice):
     print(foto_cmd)
     print(rest)
     subprocess.run(foto_cmd,shell=True)
-    #Uploader.run(choice.filename)
+    Uploader.run(choice.filename)
     
 def video(choice):
     if (choice.version==1):
