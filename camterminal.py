@@ -17,15 +17,11 @@ class Uploader(threading.Thread):
         self.Shoottime = shoottime*1000
         self.Timelapse = timelapse*1000
     def run(self):
-        os.system("pkill raspivid")
         print("thread running")
-        
         dir_cont=os.listdir("/home/pi/Pictures/cam")
         print (dir_cont)
         session = ftplib.FTP('ftp.kongesquash.dk','kongesquash.dk','Raekon75')
         for i in dir_cont:
-            img = Image.open("/home/pi/Pictures/cam/{0}".format(i)).convert('L')
-            img.save("/home/pi/Pictures/cam/{0}".format(i))
             os.rename("/home/pi/Pictures/cam/{0}".format(i),"/home/pi/Pictures/vault/{0}".format(i))
         dir_cont=os.listdir("/home/pi/Pictures/vault")
         for i in dir_cont:                    
@@ -43,9 +39,7 @@ class vid_uploader(threading.Thread):
         self.Shoottime = shoottime*1000
         self.Timelapse = timelapse*1000
     def run(self):
-        os.system("pkill raspivid")
         print("thread running")
-        
         dir_cont=os.listdir("/home/pi/Pictures/cam")
         print (dir_cont)
         session = ftplib.FTP('ftp.kongesquash.dk','kongesquash.dk','Raekon75')
@@ -112,10 +106,17 @@ class Choices ():
                     except ValueError:
                         print("Du har ikke skrevet et helt tal")
                 while (chooser==5):
+                    self.flipped=input("skal billedet flippes? (j) (n)")
+                    if self.flipped=="n":
+                        self.flipped=""
+                    elif self.flipped=="j":
+                        self.flipped="-hf -vf"
+                    chooser=6
+                while (chooser==6):
                     self.filename=input("hvad skal filen hedde?")
-                    if self.filename=="":
+                    if (self.filename==""):
                         self.filename=nowtime
-                    print (" valg er {0},{1},{2},{3},{4}".format(self.media,self.minutter,self.timelapse,self.size,self.filename))
+                    print (" valg er {0},{1},{2},{3},{4},{5}".format(self.media,self.minutter,self.timelapse,self.size,self.flipped,self.filename))
                     chooser=0
                     
             elif self.media=="v":
@@ -158,12 +159,18 @@ class Choices ():
                         chooser=15
                     except ValueError:
                         print("du har ikke skrevet et helt tal.\n")
-                        
-                while (chooser==15):
+                while chooser==15:
+                    self.flipped=input("skal filmen flippes?  (j) (n)")
+                    if self.flipped=="n":
+                        self.flipped=""
+                    elif self.flipped=="j":
+                        self.flipped="-hf -vf"
+                    chooser=16
+                while (chooser==16):
                     self.filename=input("hvad skal filen hedde?")
                     if self.filename=="":
                         self.filename=nowtime
-                    print (" valg er {0},{1},{2},{3},{4}".format(self.media,self.minutter,self.framerate,self.size,self.filename))
+                    print (" valg er {0},{1},{2},{3},{4}{5}".format(self.media,self.minutter,self.framerate,self.size,self.flipped,self.filename))
                     chooser=0
 
 
@@ -201,14 +208,15 @@ def foto(choice):
             7:"-w 640 -h 480"}
     print (Switcher[1])
     
+    
     for a in range (loops):  #makes 10 minute loops with upload cycle
-        foto_cmd="raspistill -t 600000 -tl {0} -a 12 -md {1} {2} -dt -p 200,200,200,200 -q 100 -o /home/pi/Pictures/cam/{3}%d.jpg".format(choice.timelapse, choice.size, Switcher[choice.size],choice.filename)
+        foto_cmd="raspistill -t 600000 -tl {0} -a 12 -md {1} {2} {3} -dt -p 200,200,200,200 -q 100 -o /home/pi/Pictures/cam/{4}%d.jpg".format(choice.timelapse, choice.size, Switcher[choice.size],choice.flipped,choice.filename)
         print(foto_cmd)
         print (loops)
         subprocess.run(foto_cmd,shell=True)
         Uploader.run(choice.filename)
     rest=rest*60000
-    foto_cmd="raspistill -t {0} -tl {1} -a 12 -md {2} {3} -dt -p 200,200,200,200 -q 100 -o /home/pi/Pictures/cam/{4}%d.jpg".format(rest, choice.timelapse, choice.size, Switcher[choice.size], choice.filename)
+    foto_cmd="raspistill -t {0} -tl {1} -a 12 -md {2} {3} {4} -dt -p 200,200,200,200 -q 100 -o /home/pi/Pictures/cam/{5}%d.jpg".format(rest, choice.timelapse, choice.size, Switcher[choice.size], choice.flipped,choice.filename)
     print(foto_cmd)
     print(rest)
     subprocess.run(foto_cmd,shell=True)
@@ -237,13 +245,13 @@ def video(choice):
             7:"-w 640 -h 480"}
     
     print (Switcher[1])
-    video_cmd="raspivid -t {0} -fps {1} -md {2} {3} -p 200,200,200,200 -o /home/pi/Pictures/cam/{4}.h264".format(choice.minutter, choice.framerate, choice.size, Switcher[choice.size],choice.filename)
+    video_cmd="raspivid -t {0} -fps {1} -md {2} {3} {4} -p 200,200,200,200 -o /home/pi/Pictures/cam/{5}.h264".format(choice.minutter, choice.framerate, choice.size, Switcher[choice.size],choice.flipped, choice.filename)
     convert_cmd="MP4Box -add  /home/pi/Pictures/cam/{0}.h264 /home/pi/Pictures/cam/{0}.mp4".format(choice.filename)
     print (video_cmd)
     subprocess.run(video_cmd,shell=True)
     subprocess.run(convert_cmd,shell=True)
     os.remove("/home/pi/Pictures/cam/{0}.h264".format(choice.filename))
-    #vid_uploader.run(choice.filename)
+    vid_uploader.run(choice.filename)
 
 choice = Choices()
 if choice.media=="f":
