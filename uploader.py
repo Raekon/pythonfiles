@@ -23,7 +23,8 @@ class Uploader(threading.Thread):
         for i in dir_cont:                    
             file= open('/home/pi/Pictures/cam/{0}'.format(i),'rb')
             session.storbinary('STOR skole/vagt/{0}'.format(i), file)
-            file.close  
+            file.close
+            print ("så er filen uploadet")
         session.quit
         dir_cont=os.listdir("/home/pi/Pictures/cam")
         for i in dir_cont:
