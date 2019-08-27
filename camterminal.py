@@ -68,9 +68,10 @@ class Choices ():
                     chooser=1
             except ValueError:
                 print("Du skal vælge enten 1 eller 2")
-            
+##Her startes løkken der vælger alle parametrene            
         while(chooser==1):
             self.media=input("Foto (f) eller Video (v) eller preview (p)?")
+## her starter foto-loopet (chooser 1 til 7)           
             if self.media=="f":
                 print("du har valgt foto")
                 chooser=2
@@ -116,8 +117,20 @@ class Choices ():
                     if self.filename=="":
                         self.filename=nowtime
                     print (" valg er {0},{1},{2},{3},{4}".format(self.media,self.minutter,self.timelapse,self.size,self.filename))
-                    chooser=0
-                    
+                    chooser=6
+                while (chooser==6):
+                    self.upload=input("Skal billederne uploades til FTP?  (j/n)")
+                    if self.upload=="j" or self.upload=="n":
+                        chooser=7
+                    else:
+                        print("Du skal vælge enten j eller n")
+                while (chooser==7):
+                    self.flip=input("Skal billedet flippes? (j/n) ")
+                    if self.flip=="j" or self.flip=="n":
+                        chooser=0
+                    else:
+                        print("Du skal vælge enten j eller n")
+##Her starter video-loopet  (chooser 12 til 18)                      
             elif self.media=="v":
                 print("du har valgt video \n")
                 chooser=12
@@ -164,20 +177,38 @@ class Choices ():
                     if self.filename=="":
                         self.filename=nowtime
                     print (" valg er {0},{1},{2},{3},{4}".format(self.media,self.minutter,self.framerate,self.size,self.filename))
-                    chooser=0
+                    chooser=16
+                
+                while (chooser==16):
+                    self.upload=input("Skal videoen uploades til FTP?  (j/n)")
+                    if self.upload=="j" or self.upload=="n":
+                        chooser=17
+                    else:
+                        print("Du skal vælge enten j eller n")
+                while (chooser==17):
+                    self.flip=input("Skal videoen flippes? (j/n) ")
+                    if self.flip=="j" or self.flip=="n":
+                        chooser=0
+                    else:
+                        print("Du skal vælge enten j eller n")
 
-
+## Preview rutinen ligger her fordi, så kører medievalgsloopet videre når minuttet er gået.
             elif self.media=="p":
                 print("du har valgt preview")
-                chooser=0
+                preview_script="raspivid -n -ih -t 60000 -rot 0 -w 1024 -h 720 -b 1000000 -fps 15 -o -|nc -lkv4 5001"
+                sub=subprocess.Popen(preview_script, shell=True)
+                
             else:
                 print("du skal vælge f,v, eller p")
     
         
 def foto(choice):
     print("fotoloop kører")
-    loops=int(choice.minutter/60000/10)  #number of loops
+    loops=int(choice.minutter/60000/10)#number of loops
+    print(loops)
     rest=int((choice.minutter%600000)/60000)  #number of minutes left3
+    if loops!=0:
+        rest+=1
     print("version valgt er {0}".format(choice.version))
     if (choice.version=="1"):
         Switcher={
@@ -201,18 +232,26 @@ def foto(choice):
             7:"-w 640 -h 480"}
     print (Switcher[1])
     
+    if (choice.flip=="j"):
+        Flip="-hf -vf"
+    else:
+        Flip=""
+    
     for a in range (loops):  #makes 10 minute loops with upload cycle
-        foto_cmd="raspistill -t 600000 -tl {0} -a 12 -md {1} {2} -dt -p 200,200,200,200 -q 100 -o /home/pi/Pictures/cam/{3}%d.jpg".format(choice.timelapse, choice.size, Switcher[choice.size],choice.filename)
+        foto_cmd="raspistill -t 600000 -tl {0} -a 12 -md {1} {2} -dt -p 200,200,200,200 -q 100 {3} -o /home/pi/Pictures/cam/{4}%d.jpg".format(choice.timelapse, choice.size, Switcher[choice.size],Flip,choice.filename)
         print(foto_cmd)
         print (loops)
         subprocess.run(foto_cmd,shell=True)
-        Uploader.run(choice.filename)
+        if choice.upload=="j":
+            Uploader.run(choice.filename)
     rest=rest*60000
-    foto_cmd="raspistill -t {0} -tl {1} -a 12 -md {2} {3} -dt -p 200,200,200,200 -q 100 -o /home/pi/Pictures/cam/{4}%d.jpg".format(rest, choice.timelapse, choice.size, Switcher[choice.size], choice.filename)
+    foto_cmd="raspistill -t {0} -tl {1} -a 12 -md {2} {3} -dt -p 200,200,200,200 -q 100 {4} -o /home/pi/Pictures/cam/{5}%d.jpg".format(rest, choice.timelapse, choice.size, Switcher[choice.size], Flip, choice.filename)
     print(foto_cmd)
     print(rest)
     subprocess.run(foto_cmd,shell=True)
-    #Uploader.run(choice.filename)
+    if choice.upload=="j":
+        Uploader.run(choice.filename)
+        
     
 def video(choice):
     if (choice.version==1):
@@ -235,15 +274,21 @@ def video(choice):
             5:"-w 1640 -h 922",
             6:"-w 1280 -h 720",
             7:"-w 640 -h 480"}
-    
+        
+    if (choice.flip=="j"):
+        Flip="-hf -vf"
+    else:
+        Flip=""
+        
     print (Switcher[1])
-    video_cmd="raspivid -t {0} -fps {1} -md {2} {3} -p 200,200,200,200 -o /home/pi/Pictures/cam/{4}.h264".format(choice.minutter, choice.framerate, choice.size, Switcher[choice.size],choice.filename)
+    video_cmd="raspivid -t {0} -fps {1} -md {2} {3} {4} -p 200,200,200,200 -o /home/pi/Pictures/cam/{5}.h264".format(choice.minutter, choice.framerate, choice.size, Switcher[choice.size],Flip,choice.filename)
     convert_cmd="MP4Box -add  /home/pi/Pictures/cam/{0}.h264 /home/pi/Pictures/cam/{0}.mp4".format(choice.filename)
     print (video_cmd)
     subprocess.run(video_cmd,shell=True)
     subprocess.run(convert_cmd,shell=True)
     os.remove("/home/pi/Pictures/cam/{0}.h264".format(choice.filename))
-    #vid_uploader.run(choice.filename)
+    if choice.upload=="j":
+        vid_uploader.run(choice.filename)
 
 choice = Choices()
 if choice.media=="f":
@@ -252,5 +297,7 @@ if choice.media=="f":
 elif choice.media=="v":
     video(choice)
 
-elif choice.media=="p":
-    print("her skal preview-delen ligge")
+## Preview-delen ligger oppe i choise-classen. dermed starter den medievælgeren forfra hver gang
+
+##elif choice.media=="p":
+##    print("her skal preview-delen ligge")
