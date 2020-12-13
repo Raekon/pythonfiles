@@ -22,7 +22,7 @@ while(True):
             
             dir_cont=os.listdir("/home/pi/Pictures/cam")
             print (dir_cont)
-            session = ftplib.FTP('ftp.vestergade2.dk','vestergade22.dk','Raekon75')
+            session = ftplib.FTP('ftp.vestergade22.dk','vestergade22.dk','Raekon75')
             for i in dir_cont:
                 img = Image.open("/home/pi/Pictures/cam/{0}".format(i)).convert('L')
                 img.save("/home/pi/Pictures/cam/{0}".format(i))
