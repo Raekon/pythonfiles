@@ -22,7 +22,7 @@ while(True):
             
             dir_cont=os.listdir("/home/pi/Pictures/cam")
             print (dir_cont)
-            session = ftplib.FTP('ftp.kongesquash.dk','kongesquash.dk','Raekon75')
+            session = ftplib.FTP('ftp.vestergade2.dk','vestergade22.dk','Raekon75')
             for i in dir_cont:
                 img = Image.open("/home/pi/Pictures/cam/{0}".format(i)).convert('L')
                 img.save("/home/pi/Pictures/cam/{0}".format(i))
@@ -30,7 +30,7 @@ while(True):
             dir_cont=os.listdir("/home/pi/Pictures/vault")
             for i in dir_cont:                    
                 file= open('/home/pi/Pictures/vault/{0}'.format(i),'rb')
-                session.storbinary('STOR skole/vagt/{0}'.format(i), file)
+                session.storbinary('STOR 3dcam/{0}'.format(i), file)
                 file.close  
             session.quit
             dir_cont=os.listdir("/home/pi/Pictures/vault")
@@ -48,10 +48,10 @@ while(True):
             
             dir_cont=os.listdir("/home/pi/Pictures/cam")
             print (dir_cont)
-            session = ftplib.FTP('ftp.kongesquash.dk','kongesquash.dk','Raekon75')
+            session = ftplib.FTP('ftp.vestergade22.dk','vestergade22.dk','Raekon75')
             for i in dir_cont:                    
                 file= open('/home/pi/Pictures/cam/{0}'.format(i),'rb')
-                session.storbinary('STOR skole/vagt/{0}'.format(i), file)
+                session.storbinary('STOR 3dcam/video/{0}'.format(i), file)
                 file.close  
             session.quit
             dir_cont=os.listdir("/home/pi/Pictures/cam")
