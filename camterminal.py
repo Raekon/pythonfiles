@@ -24,7 +24,7 @@ while(True):
             print (dir_cont)
             session = ftplib.FTP('ftp.vestergade22.dk','vestergade22.dk','Raekon75')
             for i in dir_cont:
-                img = Image.open("/home/pi/Pictures/cam/{0}".format(i)).convert('L')
+                img = Image.open("/home/pi/Pictures/cam/{0}".format(i)).convert('RGB')
                 img.save("/home/pi/Pictures/cam/{0}".format(i))
                 os.rename("/home/pi/Pictures/cam/{0}".format(i),"/home/pi/Pictures/vault/{0}".format(i))
             dir_cont=os.listdir("/home/pi/Pictures/vault")
